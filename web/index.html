@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GraphBasket Analytics: High-Performance Market Basket & Affinity Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Global Header -->
+  <header class="site-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <div class="brand-badge">DSA</div>
+        <div class="brand-titles">
+          <div class="brand-name">GraphBasket Analytics</div>
+          <div class="brand-sub">Graph Data Structures & Apriori Affinity Recommendation Engine</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="dataset-pill">
+          <span class="status-dot"></span>
+          <span>14,963 Supermarket Baskets (167 SKUs)</span>
+        </div>
+        <a href="supermarket_transactions.csv" download="supermarket_transactions.csv" class="btn btn-outline" style="font-size: 12px; padding: 5px 12px;">Download Dataset (CSV)</a>
+        <a href="https://github.com/ayqon/GraphBasket-DSA-Engine" target="_blank" class="btn btn-outline" style="font-size: 12px; padding: 5px 12px;">GitHub</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Metric Summary Cards -->
+  <div class="metrics-bar">
+    <div class="metric-card">
+      <div class="metric-label">Analyzed Baskets</div>
+      <div class="metric-value" id="m-baskets">14,963</div>
+      <div class="metric-desc">Real customer transactions</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Catalog Items</div>
+      <div class="metric-value" id="m-items">167</div>
+      <div class="metric-desc">Unique SKUs indexed</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Affinity Graph Edges</div>
+      <div class="metric-value" id="m-edges">6,260</div>
+      <div class="metric-desc">Co-purchase pairings</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Mined Association Rules</div>
+      <div class="metric-value" id="m-rules">1,924</div>
+      <div class="metric-desc">Confidence & Lift verified</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">DSA Memory Efficiency</div>
+      <div class="metric-value text-accent" id="m-eff">55.2%</div>
+      <div class="metric-desc">Adjacency List vs Matrix</div>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <nav class="tab-navigation">
+    <button class="tab-btn active" data-tab="tab-graph">1. Product Affinity Graph</button>
+    <button class="tab-btn" data-tab="tab-apriori">2. Apriori Rule Discovery</button>
+    <button class="tab-btn" data-tab="tab-cart">3. Smart Cart & Bundle Recommender</button>
+    <button class="tab-btn" data-tab="tab-dsa">4. DSA Complexity Benchmarks</button>
+  </nav>
+
+  <!-- Main Content Container -->
+  <main class="main-container">
+    
+    <!-- TAB 1: Product Affinity Graph Visualizer -->
+    <section id="tab-graph" class="tab-pane active">
+      <div class="pane-header">
+        <div>
+          <h2>Interactive Product Affinity Graph</h2>
+          <p class="pane-subtitle">Undirected weighted graph G=(V, E) representing co-purchase frequency and Jaccard similarity between supermarket products.</p>
+        </div>
+        <div class="graph-controls-inline">
+          <input type="text" id="graph-search" placeholder="Search product node..." class="search-input">
+          <button id="btn-fit-graph" class="btn btn-outline">Fit to View</button>
+        </div>
+      </div>
+
+      <div class="graph-layout">
+        <div class="graph-canvas-wrapper">
+          <div id="vis-graph" style="width: 100%; height: 600px;"></div>
+          <div class="graph-overlay-info">
+            <span class="pill-info">Scroll to Zoom | Drag to Pan | Click Node to Inspect Neighborhood</span>
+          </div>
+        </div>
+
+        <div class="graph-sidebar">
+          <div class="panel-box">
+            <h3>Node Inspector</h3>
+            <div id="node-details" class="node-details-empty">
+              Click any product in the graph to view its degree centrality, co-purchase neighbors, and highest affinity connections.
+            </div>
+          </div>
+
+          <div class="panel-box">
+            <h3>Category Legend</h3>
+            <div class="category-legend" id="category-legend"></div>
+          </div>
+
+          <div class="panel-box">
+            <h3>Graph Density & Sparsity</h3>
+            <div class="stat-row"><span class="stat-lbl">Vertices |V|</span><span class="stat-val">167</span></div>
+            <div class="stat-row"><span class="stat-lbl">Co-Purchase Edges |E|</span><span class="stat-val">6,260</span></div>
+            <div class="stat-row"><span class="stat-lbl">Graph Density</span><span class="stat-val">0.448</span></div>
+            <div class="stat-row"><span class="stat-lbl">Sparsity Rate</span><span class="stat-val">55.2%</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: Apriori Association Rules Explorer -->
+    <section id="tab-apriori" class="tab-pane">
+      <div class="pane-header">
+        <div>
+          <h2>Apriori Association Rule Discovery Engine</h2>
+          <p class="pane-subtitle">Evaluate high-conviction product affinities filtered by Support (Frequency), Confidence (Conditional Probability), and Lift (Synergy Gain).</p>
+        </div>
+        <div class="rule-quick-presets">
+          <button class="btn btn-outline active" data-preset="all">All Rules</button>
+          <button class="btn btn-outline" data-preset="high-lift">High Lift (> 1.4)</button>
+          <button class="btn btn-outline" data-preset="high-conf">High Confidence (> 12%)</button>
+        </div>
+      </div>
+
+      <div class="filter-card">
+        <div class="filter-grid">
+          <div class="filter-item">
+            <label for="search-rules">Search Item (Antecedent or Consequent):</label>
+            <input type="text" id="search-rules" placeholder="e.g. whole milk, yogurt, rolls..." class="search-input">
+          </div>
+          <div class="filter-item">
+            <label for="min-lift-slider">Min Lift: <span id="val-min-lift" class="badge-val">1.0</span></label>
+            <input type="range" id="min-lift-slider" min="1.0" max="2.5" step="0.05" value="1.0" class="slider">
+          </div>
+          <div class="filter-item">
+            <label for="min-conf-slider">Min Confidence (%): <span id="val-min-conf" class="badge-val">2.0%</span></label>
+            <input type="range" id="min-conf-slider" min="1.0" max="25.0" step="0.5" value="2.0" class="slider">
+          </div>
+          <div class="filter-item">
+            <label for="min-sup-slider">Min Support (%): <span id="val-min-sup" class="badge-val">0.10%</span></label>
+            <input type="range" id="min-sup-slider" min="0.05" max="1.5" step="0.05" value="0.10" class="slider">
+          </div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div class="table-header-info">
+          <span id="rules-count-display">Showing mined rules</span>
+        </div>
+        <table class="data-table" id="rules-table">
+          <thead>
+            <tr>
+              <th>Antecedent (If Customer Buys)</th>
+              <th class="text-center">&rarr;</th>
+              <th>Consequent (Then Also Buys)</th>
+              <th class="sortable" data-sort="support">Support (%)</th>
+              <th class="sortable" data-sort="confidence">Confidence (%)</th>
+              <th class="sortable" data-sort="lift">Lift</th>
+              <th class="sortable" data-sort="leverage">Leverage (*10^-4)</th>
+              <th class="sortable" data-sort="co_count">Transactions</th>
+            </tr>
+          </thead>
+          <tbody id="rules-tbody">
+            <!-- Injected via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 3: Smart Shopping Cart & Real-Time Recommender -->
+    <section id="tab-cart" class="tab-pane">
+      <div class="pane-header">
+        <div>
+          <h2>Smart Basket Simulator & Graph Affinity Recommender</h2>
+          <p class="pane-subtitle">Add items to the virtual customer basket to evaluate real-time multi-item graph recommendations, bundle lift, and category balance.</p>
+        </div>
+        <button id="btn-clear-cart" class="btn btn-outline">Clear Cart</button>
+      </div>
+
+      <div class="cart-grid">
+        <!-- Left Column: Basket Management -->
+        <div class="cart-col">
+          <div class="panel-box">
+            <h3>Add Products to Basket</h3>
+            <div class="cart-add-control">
+              <select id="product-select" class="form-select">
+                <option value="">Select product to add...</option>
+              </select>
+              <button id="btn-add-item" class="btn btn-primary">Add</button>
+            </div>
+
+            <div class="quick-items-section">
+              <div class="small-title">Popular Starter Items:</div>
+              <div class="quick-tags" id="quick-tags-container"></div>
+            </div>
+          </div>
+
+          <div class="panel-box">
+            <div class="box-title-row">
+              <h3>Current Customer Basket (<span id="cart-item-count">0</span>)</h3>
+            </div>
+            <div class="cart-items-list" id="cart-items-list">
+              <div class="empty-cart-msg">Your basket is empty. Select items above to see graph affinity recommendations.</div>
+            </div>
+          </div>
+
+          <div class="panel-box">
+            <h3>Basket Category Composition</h3>
+            <div class="chart-box" style="height: 180px;">
+              <canvas id="cart-category-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Real-time Recommendations & Bundle Metrics -->
+        <div class="cart-col">
+          <div class="panel-box highlight-panel">
+            <h3>Graph Affinity Recommendations</h3>
+            <p class="box-desc">Calculated via real-time multi-node neighbor aggregation and lift weighting.</p>
+            <div id="rec-list" class="rec-list">
+              <div class="empty-rec-msg">Add items to the basket to unlock affinity recommendations.</div>
+            </div>
+          </div>
+
+          <div class="panel-box">
+            <h3>Basket Affinity & Bundle Metrics</h3>
+            <div class="stat-row"><span class="stat-lbl">Average Cross-Item Lift</span><span class="stat-val text-accent" id="b-avg-lift">1.00x</span></div>
+            <div class="stat-row"><span class="stat-lbl">Highest Affinity Pairing</span><span class="stat-val" id="b-max-pair">None</span></div>
+            <div class="stat-row"><span class="stat-lbl">Cross-Sell Potential</span><span class="stat-val" id="b-potential">Base</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: DSA Complexity Benchmarks -->
+    <section id="tab-dsa" class="tab-pane">
+      <div class="pane-header">
+        <div>
+          <h2>Data Structures & Algorithmic Complexity Benchmarks</h2>
+          <p class="pane-subtitle">Empirical and theoretical analysis comparing Custom Adjacency List Graph Structures vs Adjacency Matrices and Apriori Pruning Efficiency.</p>
+        </div>
+      </div>
+
+      <div class="dsa-cards-grid">
+        <div class="panel-box">
+          <h3>Space Complexity: Adjacency List vs Matrix</h3>
+          <p class="box-desc">For sparse retail graphs (density approx 44.8%), an Adjacency List consumes O(V + 2E) pointers compared to O(V^2) dense matrix cells.</p>
+          <div class="chart-box" style="height: 220px;">
+            <canvas id="dsa-memory-chart"></canvas>
+          </div>
+          <div class="stat-row"><span class="stat-lbl">Adjacency List Memory</span><span class="stat-val">99.1 KB</span></div>
+          <div class="stat-row"><span class="stat-lbl">Adjacency Matrix Memory</span><span class="stat-val">221.3 KB</span></div>
+          <div class="stat-row"><span class="stat-lbl">Memory Reduction</span><span class="stat-val text-accent">55.2% Space Saved</span></div>
+        </div>
+
+        <div class="panel-box">
+          <h3>Apriori Candidate Pruning Efficiency</h3>
+          <p class="box-desc">The downward-closure property prunes non-frequent itemset candidates at each level L_k before generating C_{k+1}.</p>
+          <div class="chart-box" style="height: 220px;">
+            <canvas id="dsa-pruning-chart"></canvas>
+          </div>
+          <div class="stat-row"><span class="stat-lbl">Theoretical Level-2 Combinations</span><span class="stat-val">13,861</span></div>
+          <div class="stat-row"><span class="stat-lbl">Mined Frequent 2-Itemsets</span><span class="stat-val">6,260</span></div>
+          <div class="stat-row"><span class="stat-lbl">Search Space Pruning Rate</span><span class="stat-val text-accent">54.8% Pruned</span></div>
+        </div>
+      </div>
+
+      <div class="panel-box mt-4">
+        <h3>Algorithmic Operation Complexity Matrix</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Operation</th>
+              <th>Data Structure</th>
+              <th>Time Complexity</th>
+              <th>Space Complexity</th>
+              <th>Implementation Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Vertex Insertion</strong></td>
+              <td><code>ProductGraph</code> (Hash Map)</td>
+              <td><code>O(1)</code> average</td>
+              <td><code>O(1)</code></td>
+              <td>Dictionary key insertion for product registry.</td>
+            </tr>
+            <tr>
+              <td><strong>Edge Insertion / Weight Update</strong></td>
+              <td><code>ProductGraph</code> (Adjacency List)</td>
+              <td><code>O(1)</code></td>
+              <td><code>O(1)</code></td>
+              <td>Direct dictionary lookup + list append/dict update.</td>
+            </tr>
+            <tr>
+              <td><strong>Neighbor Traversal (Affinity)</strong></td>
+              <td><code>ProductGraph</code></td>
+              <td><code>O(deg(v))</code></td>
+              <td><code>O(1)</code> auxiliary</td>
+              <td>Optimal for sparse graphs; only explores actual co-purchases.</td>
+            </tr>
+            <tr>
+              <td><strong>Transaction Membership Check</strong></td>
+              <td><code>Transaction</code> (Hash Set)</td>
+              <td><code>O(1)</code> average</td>
+              <td><code>O(k)</code> items</td>
+              <td>Instant lookup for basket candidate verification.</td>
+            </tr>
+            <tr>
+              <td><strong>Association Rule Generation</strong></td>
+              <td><code>AprioriAnalyzer</code></td>
+              <td><code>O(2^k * |T|)</code> worst-case</td>
+              <td><code>O(|L_k|)</code></td>
+              <td>Bounded by maximum basket size (average 2.54 items).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div>GraphBasket Analytics Platform - Data Structures & Algorithmic Association Rule Engine</div>
+      <div><a href="https://github.com/ayqon/GraphBasket-DSA-Engine" target="_blank" class="footer-link">GitHub Repository</a></div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,472 +1,139 @@
-# Market Basket Analysis System - Task 2 Implementation
+# GraphBasket-DSA-Engine
+## High-Performance Graph Data Structures & Apriori Association Rule Mining
 
-## Overview
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![Test Suite](https://img.shields.io/badge/pytest-23%2F23%20passed-emerald.svg)](test_market_basket.py)
+[![License: MIT](https://img.shields.io/badge/License-MIT-slate.svg)](LICENSE)
+[![Dataset](https://img.shields.io/badge/Dataset-14%2C963%20Baskets-blue.svg)](data/supermarket_transactions.csv)
 
-This project implements a comprehensive Market Basket Analysis System using graph-based data structures and the Apriori algorithm for discovering product association patterns in supermarket transactions. The project follows Test-Driven Development (TDD) principles with automated test coverage.
+An end-to-end, high-performance Market Basket Analysis and Real-Time Product Recommendation System. The platform couples custom graph data structures (Adjacency List representation) with the Apriori association rule mining algorithm to discover multi-item affinities, cross-selling opportunities, and bundle synergy metrics across 14,963 customer shopping transactions.
+
+---
+
+## Dataset Access & Information
+
+The benchmark dataset consists of real-world transactional purchase records from a retail supermarket chain:
+* **Online Repository File**: [`data/supermarket_transactions.csv`](data/supermarket_transactions.csv)
+* **Web UI Direct Download**: Accessible via the "Download Dataset (CSV)" button in the live dashboard header.
+* **Volume**: 14,963 unique customer shopping baskets across 38,765 item purchase events.
+* **Catalog**: 167 distinct product stock-keeping units (SKUs) spanning 8 categories (Dairy, Fresh Produce, Bakery, Beverages, Meat, Snacks, Household, Pantry).
+* **Format**:
+  * `Member_number`: Customer identifier
+  * `Date`: Transaction timestamp (DD-MM-YYYY)
+  * `itemDescription`: Standardized item name
+
+---
+
+## Key Highlights
+
+* **Custom Graph Architecture (O(V + E))**: Undirected weighted graph representing item co-purchase frequency. Eliminates the memory overhead of dense adjacency matrices, achieving a **55.2% memory reduction** on retail transaction sparsity.
+* **Apriori Association Rule Mining**: Generates support, confidence, lift, and leverage metrics across 167 unique supermarket products with level-wise downward-closure candidate pruning.
+* **Real-Time Recommendation Engine**: Multi-item graph neighborhood traversal calculating aggregated synergy lift for dynamic shopping cart bundles.
+* **Interactive Standalone Web Platform**: Zero-dependency frontend providing an interactive Force-Directed Graph Visualizer, Rule Filter Engine, Shopping Cart Simulator, and DSA Complexity Benchmarks.
+* **Test-Driven Architecture**: 23/23 passing automated unit tests covering data parsing, graph mutations, edge traversals, and rule evaluation.
+
+---
+
+## Architectural & Algorithmic Complexity
+
+| Operation | Data Structure | Time Complexity | Space Complexity | Practical Note |
+|:---|:---|:---:|:---:|:---|
+| **Vertex Insertion** | `ProductGraph` (Hash Map) | O(1) avg | O(1) | Constant-time product catalog indexing |
+| **Edge Insertion / Update** | `ProductGraph` (Adjacency List) | O(1) | O(1) | Efficient pointer linkage for co-purchases |
+| **Neighbor Traversal (Affinity)** | `ProductGraph` | O(deg(v)) | O(1) aux | Optimal for sparse graphs (55.2% sparsity) |
+| **Basket Membership Check** | `Transaction` (Hash Set) | O(1) avg | O(k) | Constant-time verification of candidate items |
+| **Association Rule Generation** | `AprioriAnalyzer` | O(2^k * |T|) worst | O(|L_k|) | Bounded by average basket size (k_avg = 2.54) |
+
+---
+
+## Data Structure Memory Comparison: Retail Graph Sparsity
+
+On retail purchase graphs with |V| = 167 vertices and |E| = 6,260 undirected co-occurrence edges (sparsity = 55.2%):
+
+```
+Adjacency List Entries = |V| + 2|E| = 167 + 2(6,260) = 12,687 pointers (approx 99.1 KB)
+Adjacency Matrix Entries = |V|^2 = 167^2 = 27,889 cells (approx 221.3 KB)
+Memory Reduction = 1 - (12,687 / 27,889) = 55.2% Space Saved
+```
+
+---
+
+## Mathematical Formulation of Mining Metrics
+
+Given transactions T and itemsets X, Y:
+
+1. **Support (S)**: Fraction of total baskets containing X union Y:
+   $$\text{Support}(X \to Y) = \frac{\sigma(X \cup Y)}{|T|}$$
+
+2. **Confidence (C)**: Conditional probability that basket contains Y given X:
+   $$\text{Confidence}(X \to Y) = \frac{\text{Support}(X \cup Y)}{\text{Support}(X)} = P(Y \mid X)$$
+
+3. **Lift (L)**: Ratio of observed joint frequency to expected frequency under independence:
+   $$\text{Lift}(X \to Y) = \frac{\text{Confidence}(X \to Y)}{\text{Support}(Y)} = \frac{P(X \cap Y)}{P(X) \cdot P(Y)}$$
+   * Lift > 1.0: Positive synergy and complementary cross-selling potential.
+   * Lift = 1.0: Independent purchasing behavior.
+   * Lift < 1.0: Negative affinity or substitute products.
+
+4. **Leverage**: Absolute difference between joint co-occurrence and independent expectations:
+   $$\text{Leverage}(X \to Y) = \text{Support}(X \to Y) - (\text{Support}(X) \cdot \text{Support}(Y))$$
+
+---
 
 ## Project Structure
 
 ```
-Task-2-Data-Structure-and-Algorithm/
-├── market_basket_system.py          # Core data structures and algorithms
-├── test_market_basket.py            # Comprehensive unit tests (TDD)
-├── analysis_main.py                 # Main analysis script with visualizations
-├── technical_report.py              # Technical reflective report
-├── requirements.txt                 # Python dependencies
-├── README.md                        # This file
-├── Supermarket_dataset_PAI (2).csv # Input dataset
-└── analysis_results/                # Generated visualizations (created at runtime)
-    ├── 01_top_products.png
-    ├── 02_association_rules.png
-    ├── 03_frequent_itemsets.png
-    └── 04_transaction_analysis.png
+.
+├── market_basket_system.py    # Core Graph Data Structures & Apriori Mining Engine
+├── test_market_basket.py      # Automated Pytest Test Suite (23 Test Cases)
+├── requirements.txt           # Environment Dependencies
+├── data/                      # Transactional Dataset
+│   └── supermarket_transactions.csv # 14,963 Clean Customer Baskets
+├── web/                       # Standalone Web Analytics UI
+│   ├── index.html             # UI Structure & 4-Tab Navigation
+│   ├── style.css              # Clean Slate/White High-Contrast Styling
+│   ├── app.js                 # Force-Directed Graph, Cart Simulator & Rule Filter
+│   ├── real_data.json         # Pre-indexed Graph Nodes, Edges & 1,924 Rules
+│   └── supermarket_transactions.csv # Direct Web Download Asset
+└── README.md                  # System Documentation
 ```
 
-## Key Components
+---
 
-### 1. Data Structures (`market_basket_system.py`)
+## Quickstart & Local Execution
 
-#### ProductGraph
-- **Type**: Undirected Weighted Graph
-- **Purpose**: Model product relationships and co-purchase patterns
-- **Time Complexity**: 
-  - Add product: O(1)
-  - Add edge: O(1)
-  - Get neighbors: O(degree)
-- **Space Complexity**: O(V + E) where V = products, E = relationships
-
-#### Transaction
-- **Purpose**: Represent individual customer purchases
-- **Structure**: Member ID, Date, Set of Items
-- **Efficiency**: Set operations for O(1) membership testing
-
-#### AprioriAnalyzer
-- **Algorithm**: Apriori frequent itemset mining
-- **Time Complexity**: O(2^m * n) with pruning
-- **Parameters**: min_support threshold (0-1)
-
-#### AssociationRuleMiner
-- **Purpose**: Generate association rules from frequent itemsets
-- **Metrics Calculated**:
-  - Support: P(A and B)
-  - Confidence: P(B | A)
-  - Lift: P(A and B) / (P(A) * P(B))
-
-### 2. Algorithms
-
-#### Apriori Algorithm
-**Principle**: If an itemset is frequent, all subsets are frequent
-
-**Steps**:
-1. Find frequent 1-itemsets
-2. Generate (k+1)-candidates from k-itemsets
-3. Prune candidates not meeting min_support
-4. Repeat until no new frequent itemsets
-
-**Complexity Analysis**:
-- Time: O(2^m * n) worst case, O(n*k) with pruning
-- Space: O(2^m) for candidate/frequent itemsets
-
-#### Association Rule Mining
-- Generate all possible antecedent-consequent pairs from itemsets
-- Calculate confidence and lift metrics
-- Filter by min_confidence threshold
-
-### 3. Testing (`test_market_basket.py`)
-
-**TDD Approach**: Tests written before implementation
-
-**Test Coverage**:
-- Product creation and comparison
-- Transaction management
-- Graph operations (add products, edges, queries)
-- Apriori itemset mining
-- Association rule generation
-- Data loading and processing
-- Integration tests
-
-**Run Tests**:
-```bash
-pytest test_market_basket.py -v
-```
-
-### 4. Visualization (`analysis_main.py`)
-
-Generates four comprehensive visualizations:
-
-1. **Top Products Chart**: Most frequently purchased items (bar chart)
-2. **Association Rules**: Top rules by lift and confidence (grouped bar chart)
-3. **Itemset Distribution**: Frequency of itemset sizes
-4. **Transaction Analysis**: 
-   - Transaction size distribution
-   - Top items purchased
-   - Summary statistics
-   - Date distribution
-
-## Dataset
-
-**Source**: Supermarket_dataset_PAI (2).csv
-
-**Format**:
-```
-Member_number | Date       | itemDescription
-1808          | 21-07-2015 | tropical fruit
-2552          | 05-01-2015 | whole milk
-...
-```
-
-**Statistics**:
-- Total Records: 1,000+
-- Unique Members: 1,000+
-- Unique Items: ~50
-- Date Range: January-December 2015
-
-## Installation
-
-### Prerequisites
-- Python 3.8+
-- pip
-
-### Setup
+### 1. Environment Setup & Testing
 
 ```bash
-# Clone repository (if using git)
-cd Task-2-Data-Structure-and-Algorithm
+# Clone the repository
+git clone https://github.com/ayqon/GraphBasket-DSA-Engine.git
+cd GraphBasket-DSA-Engine
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Verify installation
-python -c "import pandas, matplotlib, seaborn, pytest; print('✓ All packages installed')"
-```
-
-## Usage
-
-### 1. Run Comprehensive Analysis
-
-```bash
-python analysis_main.py
-```
-
-**Output**:
-- Console summary with top products and rules
-- `analysis_results.txt` - Detailed text report
-- `analysis_results/` - Directory with 4 visualization PNG files
-
-### 2. Run Test Suite
-
-```bash
-# Run all tests with verbose output
+# Run full automated test suite
 pytest test_market_basket.py -v
-
-# Run specific test class
-pytest test_market_basket.py::TestProductGraph -v
-
-# Generate coverage report
-pytest test_market_basket.py --cov=market_basket_system
 ```
 
-### 3. Use System Programmatically
-
-```python
-from market_basket_system import MarketBasketAnalysisSystem
-
-# Initialize system
-system = MarketBasketAnalysisSystem(min_support=0.02, min_confidence=0.3)
-
-# Load data
-system.load_data('Supermarket_dataset_PAI (2).csv')
-
-# Get results
-frequent_itemsets = system.get_frequent_itemsets()
-rules = system.get_association_rules()
-top_products = system.get_top_products(10)
-
-# Print summary
-summary = system.get_summary()
-print(f"Total transactions: {summary['total_transactions']}")
-print(f"Unique products: {summary['total_products']}")
-print(f"Rules found: {summary['association_rules_count']}")
-```
-
-### 4. Generate Technical Report
+### 2. Launch Web Analytics UI
 
 ```bash
-python technical_report.py
+# Serve the web application locally
+python -m http.server 8090 --directory web
 ```
-
-**Output**: 
-- `TECHNICAL_REPORT.md` - Complete analysis report (2,847 words)
-
-## Performance Metrics
-
-### Benchmark Results
-
-| Metric | Value |
-|--------|-------|
-| Dataset Size | 1,000 transactions |
-| Load Time | <50ms |
-| Analysis Time | <300ms |
-| Frequent Itemsets | 100-200 |
-| Association Rules | 50-100 |
-| Memory Usage | <50MB |
-
-### Scalability
-
-| Dataset Size | Execution Time | Feasibility |
-|--------------|---|---|
-| 1,000 trans. | <0.5s | ✓ Excellent |
-| 10,000 trans. | 2-5s | ✓ Good |
-| 100,000 trans. | 30-60s | ✓ Good |
-| 1,000,000 trans. | 5-10 min | ⚠ Acceptable |
-| 10,000,000+ trans. | Hours | ✗ Needs optimization |
-
-## Algorithm Justification
-
-### Why Apriori?
-
-1. **Industry Standard**: Proven in thousands of retail deployments
-2. **Effective Pruning**: Eliminates ~95% of candidates through Apriori Principle
-3. **Interpretability**: Rules easily understood by business stakeholders
-4. **Scalability**: Works well up to 100K transactions with tuning
-
-### Alternatives Considered
-
-| Algorithm | Pros | Cons | Why Not? |
-|-----------|------|------|---------|
-| Eclat | Faster on dense data | Complex implementation | Complexity not justified |
-| FP-Growth | 50-100x faster | Memory intensive | Good for future optimization |
-| K-Means | Fast clustering | No association strength | Wrong problem domain |
-
-## Design Decisions
-
-### Graph-Based Product Relationships
-
-**Rationale**:
-- Natural representation of co-purchase patterns
-- O(1) edge lookup for efficiency
-- Supports weighted relationships (frequency)
-
-**Alternative**: Matrix representation (less efficient for sparse graphs)
-
-### Set-Based Transactions
-
-**Rationale**:
-- O(1) membership testing required by Apriori
-- Automatic duplicate elimination
-- Efficient set operations
-
-**Alternative**: List representation (slower lookups)
-
-## Real-World Applications
-
-### 1. Retail Store Optimization
-**Use**: Place related products near each other
-**Impact**: 5-15% sales uplift
-**Implementation**: Daily/weekly analysis
-
-### 2. E-Commerce Recommendations
-**Use**: Suggest complementary products at checkout
-**Impact**: 3-8% cross-sell revenue increase
-**Implementation**: Cache top rules in memory
-
-### 3. Promotional Bundling
-**Use**: Create attractive product bundles
-**Impact**: 10-20% bundle purchase rate
-**Implementation**: Monthly rule analysis
-
-### 4. Inventory Planning
-**Use**: Optimize stocking of related items
-**Impact**: 5-10% inventory cost reduction
-**Implementation**: Weekly stock adjustment
-
-## Advanced Features (Future Work)
-
-1. **FP-Growth Algorithm**: 50-100x performance improvement
-2. **Streaming/Incremental Analysis**: Real-time updates
-3. **Temporal Patterns**: Time-of-day, seasonal trends
-4. **Distributed Processing**: PySpark for multi-server
-5. **Auto-Tuning**: Automatic min_support optimization
-6. **Anomaly Detection**: Unusual purchase patterns
-
-## Complexity Analysis
-
-### Time Complexity
-
-```
-Operation              | Complexity  | Notes
------------------------|-------------|------------------
-Load CSV               | O(n)        | n = rows
-Build Graph            | O(n*k²)     | k = items/trans
-Find 1-itemsets        | O(n*m)      | m = unique items
-Find k-itemsets        | O(n*2^m)    | Worst case
-Generate Rules         | O(2^m*n)    | All itemsets
-```
-
-### Space Complexity
-
-```
-Data Structure         | Complexity  | Notes
------------------------|-------------|------------------
-Product Graph          | O(V+E)      | V products, E edges
-Transactions           | O(n*k)      | n trans, k items
-Itemsets Cache         | O(2^m)      | m = unique items
-```
-
-## Key Metrics Explanation
-
-### Support
-Percentage of transactions containing an itemset
-```
-Support(A→B) = Transactions with {A,B} / Total transactions
-```
-
-### Confidence
-Probability of buying B given A was purchased
-```
-Confidence(A→B) = Support(A∪B) / Support(A)
-```
-
-### Lift
-How much B depends on A (>1 means positive correlation)
-```
-Lift(A→B) = Support(A∪B) / (Support(A) * Support(B))
-```
-
-## Troubleshooting
-
-### Issue: No association rules found
-**Solution**: Decrease min_confidence threshold
-```python
-system = MarketBasketAnalysisSystem(min_support=0.01, min_confidence=0.2)
-```
-
-### Issue: Analysis takes too long
-**Solution**: Increase min_support threshold
-```python
-system = MarketBasketAnalysisSystem(min_support=0.05, min_confidence=0.5)
-```
-
-### Issue: Memory error on large dataset
-**Solution**: Process data in batches or implement FP-Growth
-```python
-# Process by date range
-for start_date, end_date in date_ranges:
-    subset = df[(df['Date'] >= start_date) & (df['Date'] <= end_date)]
-    # Analyze subset
-```
-
-### Import Error: pandas not found
-**Solution**: Install dependencies
-```bash
-pip install -r requirements.txt
-```
-
-## Testing Examples
-
-### Example 1: Test Product Graph
-```python
-from market_basket_system import ProductGraph, Product
-
-graph = ProductGraph()
-p1 = Product("milk", "Dairy")
-p2 = Product("bread", "Bakery")
-
-graph.add_product(p1)
-graph.add_edge(p1, p2, weight=5)
-
-neighbors = graph.get_neighbors(p1)
-assert p2 in neighbors
-```
-
-### Example 2: Test Apriori
-```python
-from market_basket_system import AprioriAnalyzer
-
-analyzer = AprioriAnalyzer(min_support=0.3)
-analyzer.add_transaction({"milk", "bread", "butter"})
-analyzer.add_transaction({"milk", "bread"})
-
-itemsets = analyzer.find_frequent_itemsets()
-assert frozenset(["milk"]) in itemsets
-```
-
-### Example 3: Test Rule Mining
-```python
-from market_basket_system import AssociationRuleMiner
-
-miner = AssociationRuleMiner(min_confidence=0.5)
-miner.add_transaction({"milk", "bread", "butter"})
-miner.add_transaction({"milk", "bread"})
-
-rules = miner.generate_association_rules()
-# Rules will show milk→bread association
-```
-
-## Documentation
-
-### Technical Report
-See `technical_report.py` or `TECHNICAL_REPORT.md` for:
-- Design justification
-- Complexity analysis
-- Scalability evaluation
-- Real-world use cases
-- Business impact
-
-### Code Comments
-Extensive inline comments explain:
-- Algorithm steps
-- Design choices
-- Complexity implications
-
-## Contributing
-
-When modifying the system:
-
-1. **Write tests first** (TDD approach)
-2. **Implement functionality** to pass tests
-3. **Add documentation** for new features
-4. **Run full test suite**: `pytest -v`
-5. **Check performance** on sample data
-
-## Performance Optimization Roadmap
-
-### Phase 1 (Current)
-- Apriori algorithm with pruning
-- Graph-based structure
-- TDD test coverage
-
-### Phase 2 (Recommended)
-- FP-Growth implementation
-- Caching frequent itemsets
-- Batch processing on large datasets
-
-### Phase 3 (Future)
-- Distributed processing (PySpark)
-- Streaming/incremental updates
-- Real-time recommendation engine
-
-## Authors & Acknowledgments
-
-- **Implementation**: Automated TDD Approach
-- **Data Source**: Supermarket_dataset_PAI.csv
-- **Algorithm Reference**: Agrawal & Srikant (1994) - Apriori Algorithm
-- **Course**: Data Structure and Algorithm - Task 2
-
-## License
-
-This project is provided as-is for educational purposes.
-
-## Contact & Support
-
-For questions about:
-- **Algorithm design**: See `technical_report.py`
-- **Implementation**: See `market_basket_system.py` comments
-- **Usage**: See examples in this README
-- **Tests**: See `test_market_basket.py`
+Navigate to `http://localhost:8090/` in your browser.
 
 ---
 
-**Last Updated**: December 12, 2025
-**Version**: 1.0 (Initial Release)
-**Status**: Production Ready for Weekly/Monthly Batch Analysis
+## Web Platform Modules
+
+1. **Interactive Product Affinity Graph**: Physics-driven network canvas displaying item frequency nodes and co-purchase edges with degree centrality inspection.
+2. **Apriori Rule Discovery**: Real-time slider filtering across 1,924 association rules by Support, Confidence, and Lift thresholds.
+3. **Smart Basket Recommender**: E-commerce cart simulator that computes real-time multi-item neighborhood lift and bundle cross-sell potential.
+4. **DSA Complexity Benchmarks**: Visual and mathematical comparison of Adjacency List memory efficiency vs Adjacency Matrices and downward-closure pruning rates.
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

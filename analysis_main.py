@@ -170,26 +170,26 @@ class AnalysisVisualizer:
         # Plot 1: Top Products
         fig1 = self.plot_top_products(system)
         fig1.savefig(os.path.join(output_dir, '01_top_products.png'), dpi=300, bbox_inches='tight')
-        print("✓ Saved: 01_top_products.png")
+        print("[OK] Saved: 01_top_products.png")
         plt.close(fig1)
         
         # Plot 2: Association Rules
         rules = system.get_association_rules()
         fig2 = self.plot_association_rules(rules)
         fig2.savefig(os.path.join(output_dir, '02_association_rules.png'), dpi=300, bbox_inches='tight')
-        print("✓ Saved: 02_association_rules.png")
+        print("[OK] Saved: 02_association_rules.png")
         plt.close(fig2)
         
         # Plot 3: Frequent Itemsets
         fig3 = self.plot_frequent_itemsets(system)
         fig3.savefig(os.path.join(output_dir, '03_frequent_itemsets.png'), dpi=300, bbox_inches='tight')
-        print("✓ Saved: 03_frequent_itemsets.png")
+        print("[OK] Saved: 03_frequent_itemsets.png")
         plt.close(fig3)
         
         # Plot 4: Transaction Analysis
         fig4 = self.plot_transaction_analysis(system)
         fig4.savefig(os.path.join(output_dir, '04_transaction_analysis.png'), dpi=300, bbox_inches='tight')
-        print("✓ Saved: 04_transaction_analysis.png")
+        print("[OK] Saved: 04_transaction_analysis.png")
         plt.close(fig4)
 
 
@@ -259,14 +259,14 @@ def generate_analysis_report(system, rules, output_file='analysis_results.txt'):
         f.write("END OF REPORT\n")
         f.write("=" * 80 + "\n")
     
-    print(f"\n✓ Analysis report saved to {output_file}")
+    print(f"\n[OK] Analysis report saved to {output_file}")
 
 
 def main():
     """Main analysis execution"""
     
     # Dataset path
-    dataset_path = "Supermarket_dataset_PAI (2).csv"
+    dataset_path = "data/supermarket_transactions.csv"
     
     if not os.path.exists(dataset_path):
         print(f"Error: Dataset '{dataset_path}' not found!")
@@ -295,11 +295,11 @@ def main():
     print("\n" + "=" * 80)
     print("ANALYSIS RESULTS")
     print("=" * 80)
-    print(f"✓ Transactions processed: {summary['total_transactions']}")
-    print(f"✓ Unique products: {summary['total_products']}")
-    print(f"✓ Frequent itemsets found: {summary['frequent_itemsets_count']}")
-    print(f"✓ Association rules generated: {summary['association_rules_count']}")
-    print(f"✓ Average items per transaction: {summary['avg_items_per_transaction']:.2f}")
+    print(f"[OK] Transactions processed: {summary['total_transactions']}")
+    print(f"[OK] Unique products: {summary['total_products']}")
+    print(f"[OK] Frequent itemsets found: {summary['frequent_itemsets_count']}")
+    print(f"[OK] Association rules generated: {summary['association_rules_count']}")
+    print(f"[OK] Average items per transaction: {summary['avg_items_per_transaction']:.2f}")
     
     # Display top products
     print("\n" + "-" * 80)
@@ -333,7 +333,7 @@ def main():
     generate_analysis_report(system, rules)
     
     print("\n" + "=" * 80)
-    print("✓ ANALYSIS COMPLETE!")
+    print("[OK] ANALYSIS COMPLETE!")
     print("=" * 80)
     print("\nOutput files:")
     print("  - analysis_results/ (directory with visualizations)")

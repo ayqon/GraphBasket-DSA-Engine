@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: graphbasket-dsa-engine
+    env: static
+    buildCommand: ''
+    staticPublishPath: ./web

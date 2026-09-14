@@ -1,10 +1,13 @@
 # GraphBasket-DSA-Engine
 ## High-Performance Graph Data Structures & Apriori Association Rule Mining
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Render-emerald.svg)](https://graphbasket-dsa-engine.onrender.com)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![Test Suite](https://img.shields.io/badge/pytest-23%2F23%20passed-emerald.svg)](test_market_basket.py)
 [![License: MIT](https://img.shields.io/badge/License-MIT-slate.svg)](LICENSE)
 [![Dataset](https://img.shields.io/badge/Dataset-14%2C963%20Baskets-blue.svg)](data/supermarket_transactions.csv)
+
+> **Live Interactive Platform**: [https://graphbasket-dsa-engine.onrender.com](https://graphbasket-dsa-engine.onrender.com)
 
 An end-to-end, high-performance Market Basket Analysis and Real-Time Product Recommendation System. The platform couples custom graph data structures (Adjacency List representation) with the Apriori association rule mining algorithm to discover multi-item affinities, cross-selling opportunities, and bundle synergy metrics across 14,963 customer shopping transactions.
 
@@ -121,7 +124,7 @@ pytest test_market_basket.py -v
 # Serve the web application locally
 python -m http.server 8090 --directory web
 ```
-Navigate to `http://localhost:8090/` in your browser.
+Navigate to `http://localhost:8090/` in your browser (or visit the live deployment at [https://graphbasket-dsa-engine.onrender.com](https://graphbasket-dsa-engine.onrender.com)).
 
 ---
 

@@ -1,6 +1,6 @@
 services:
   - type: web
     name: graphbasket-dsa-engine
-    env: static
-    buildCommand: ''
-    staticPublishPath: ./web
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python server.py
